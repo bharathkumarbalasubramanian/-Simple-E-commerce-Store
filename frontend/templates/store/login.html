@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Sign In - CodeAlpha Store{% endblock %}
+
+{% block content %}
+
+<div class="auth-container">
+  <div class="auth-header">
+    <h1 class="auth-title">Welcome Back</h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.4rem;">Sign in to access your cart &amp; manage orders.</p>
+  </div>
+
+  <form id="login-form">
+    <div class="form-group">
+      <label class="form-label" for="username">Username</label>
+      <input type="text" id="username" required class="form-control" placeholder="Enter username">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="password">Password</label>
+      <input type="password" id="password" required class="form-control" placeholder="Enter password">
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block" style="padding: 0.85rem; font-size: 1rem; margin-top: 1.5rem;">
+      Sign In
+    </button>
+  </form>
+
+  <div style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+    Don't have an account yet? <a href="/register" style="color: var(--accent-primary); font-weight: 600;">Register Account</a>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      API.setAuth(data.access_token, data.username);
+      showToast(`Welcome back, ${data.username}!`);
+      setTimeout(() => window.location.href = '/', 600);
+    } else {
+      showToast(data.detail || 'Login failed', 'error');
+    }
+  } catch (err) {
+    showToast('Failed to connect to authentication server', 'error');
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Storefront - CodeAlpha E-Commerce Store{% endblock %}
+
+{% block content %}
+
+<section class="hero-banner" id="hero-banner-section">
+  <h1 class="hero-title">Next-Gen Tech &amp; Lifestyle Gear</h1>
+  <p class="hero-subtitle">High-performance audio devices, ergonomic workspace gear, and smartwatch tech powered by FastAPI &amp; SQLite.</p>
+</section>
+
+<div class="categories-filter">
+  <a href="/" class="category-pill {% if not selected_category %}active{% endif %}">All Products</a>
+  {% for cat in categories %}
+    <a href="/?category={{ cat.slug }}" class="category-pill {% if selected_category == cat.slug %}active{% endif %}">
+      {{ cat.name }}
+    </a>
+  {% endfor %}
+</div>
+
+<div class="products-grid">
+  {% for product in products %}
+    <article class="product-card">
+      <div class="product-image-wrap">
+        <img src="{{ product.image_url|default:'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800' }}" alt="{{ product.name }}" class="product-image" loading="lazy">
+        {% if product.category %}
+          <span class="product-category-tag">{{ product.category.name }}</span>
+        {% endif %}
+      </div>
+
+      <div class="product-body">
+        <h2 class="product-title">
+          <a href="/product/{{ product.slug }}">{{ product.name }}</a>
+        </h2>
+        <p class="product-description">{{ product.description }}</p>
+
+        <div class="product-footer">
+          <span class="product-price">${{ product.price }}</span>
+          <button type="button" class="btn btn-primary btn-sm" onclick="addToCart({{ product.id }}, '{{ product.name }}')">
+            Add to Cart
+          </button>
+        </div>
+      </div>
+    </article>
+  {% empty %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem; background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--glass-border);">
+      <h3>No products found</h3>
+      <a href="/" class="btn btn-secondary" style="margin-top: 1.5rem;">Browse All Products</a>
+    </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function addToCart(productId, productName) {
+  try {
+    const res = await API.authFetch('/api/cart/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product_id: productId, quantity: 1 })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      showToast(`"${productName}" added to cart!`);
+      const badge = document.getElementById('cart-badge');
+      if (badge) badge.textContent = data.cart_total_count;
+    } else {
+      showToast(data.detail || 'Error adding to cart', 'error');
+    }
+  } catch (err) {
+    showToast('Failed to connect to server', 'error');
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Confirmation #{{ order.id }} - CodeAlpha Store{% endblock %}
+
+{% block content %}
+
+<div style="max-width: 750px; margin: 2rem auto; background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 3rem 2.5rem; text-align: center; box-shadow: var(--shadow-md);">
+  
+  <div style="width: 72px; height: 72px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); border: 2px solid var(--success); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+    <svg width="36" height="36" fill="none" stroke="var(--success)" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+    </svg>
+  </div>
+
+  <h1 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem;">Order Confirmed!</h1>
+  <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2rem;">
+    Thank you for your purchase, <strong>{{ order.full_name }}</strong>. We've received your order <strong>#{{ order.id }}</strong>.
+  </p>
+
+  <!-- Order Receipt Breakdown -->
+  <div style="background: var(--bg-secondary); border: 1px solid var(--glass-border); border-radius: var(--radius-md); padding: 1.5rem; text-align: left; margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem; margin-bottom: 1rem;">
+      <div>
+        <div style="font-size: 0.85rem; color: var(--text-muted);">Shipping Address</div>
+        <div style="font-weight: 600;">{{ order.address }}, {{ order.city }}, {{ order.postal_code }}</div>
+      </div>
+      <div style="text-align: right;">
+        <div style="font-size: 0.85rem; color: var(--text-muted);">Status</div>
+        <span class="stock-badge in-stock">{{ order.status }}</span>
+      </div>
+    </div>
+
+    <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem;">Items Ordered</h3>
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+      {% for item in order.items.all %}
+        <div style="display: flex; justify-content: space-between; font-size: 0.95rem;">
+          <span>{{ item.quantity }} &times; {{ item.product_name }}</span>
+          <strong>${{ item.subtotal }}</strong>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div style="border-top: 1px solid var(--glass-border); margin-top: 1rem; padding-top: 1rem; display: flex; justify-content: space-between; font-size: 1.15rem; font-weight: 700;">
+      <span>Total Paid</span>
+      <span style="color: var(--accent-primary);">${{ order.total_price }}</span>
+    </div>
+  </div>
+
+  <a href="{% url 'product_list' %}" class="btn btn-primary" style="padding: 0.85rem 2.5rem; font-size: 1rem;">
+    Back to Storefront
+  </a>
+
+</div>
+
+{% endblock %}

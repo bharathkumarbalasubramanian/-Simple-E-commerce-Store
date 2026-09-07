@@ -1,0 +1,37 @@
+from .models import Cart
+
+def get_cart_for_request(request):
+    if not request.session.session_key:
+        request.session.create()
+
+    session_id = request.session.session_key
+
+    if request.user.is_authenticated:
+        user_cart, created = Cart.objects.get_or_create(user=request.user)
+
+        if session_id:
+            guest_cart = Cart.objects.filter(session_id=session_id, user__isnull=True).first()
+            if guest_cart:
+                for item in guest_cart.items.all():
+                    user_item, item_created = user_cart.items.get_or_create(
+                        product=item.product,
+                        defaults={'quantity': item.quantity}
+                    )
+                    if not item_created:
+                        user_item.quantity += item.quantity
+                        user_item.save()
+                guest_cart.delete()
+
+        return user_cart
+    else:
+        cart, created = Cart.objects.get_or_create(session_id=session_id, user__isnull=True)
+        return cart
+
+
+def cart_processor(request):
+    cart = get_cart_for_request(request)
+    total_count = cart.get_total_quantity() if cart else 0
+    return {
+        'cart': cart,
+        'cart_total_count': total_count,
+    }

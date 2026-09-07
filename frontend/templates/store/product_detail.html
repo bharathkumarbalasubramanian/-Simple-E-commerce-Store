@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} - CodeAlpha Store{% endblock %}
+
+{% block content %}
+
+<nav style="margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+  <a href="{% url 'product_list' %}">Store</a> &nbsp;/&nbsp; 
+  {% if product.category %}
+    <a href="{% url 'product_list' %}?category={{ product.category.slug }}">{{ product.category.name }}</a> &nbsp;/&nbsp;
+  {% endif %}
+  <span style="color: var(--text-main);">{{ product.name }}</span>
+</nav>
+
+<div class="detail-grid">
+  <div class="detail-gallery">
+    <img src="{{ product.get_image }}" alt="{{ product.name }}" id="detail-product-image">
+  </div>
+
+  <div class="detail-info">
+    {% if product.category %}
+      <span style="color: var(--accent-primary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+        {{ product.category.name }}
+      </span>
+    {% endif %}
+
+    <h1 class="detail-title" id="detail-product-name">{{ product.name }}</h1>
+
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <span class="detail-price">${{ product.price }}</span>
+      {% if product.stock > 0 %}
+        <span class="stock-badge in-stock">In Stock ({{ product.stock }} available)</span>
+      {% else %}
+        <span class="stock-badge out-of-stock">Out of Stock</span>
+      {% endif %}
+    </div>
+
+    <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.7;">
+      {{ product.description }}
+    </p>
+
+    {% if product.stock > 0 %}
+      <form action="{% url 'cart_add' product.id %}" method="POST" class="ajax-add-to-cart" id="detail-add-to-cart-form" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1.25rem;">
+        {% csrf_token %}
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <label class="form-label" style="margin-bottom: 0;">Quantity:</label>
+          <div class="quantity-control">
+            <button type="button" class="qty-btn" onclick="const input = document.getElementById('detail-qty'); if(parseInt(input.value)>1) input.value=parseInt(input.value)-1;">-</button>
+            <input type="number" name="quantity" id="detail-qty" value="1" min="1" max="{{ product.stock }}" class="qty-input">
+            <button type="button" class="qty-btn" onclick="const input = document.getElementById('detail-qty'); if(parseInt(input.value)<{{ product.stock }}) input.value=parseInt(input.value)+1;">+</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="detail-submit-btn" style="padding: 0.9rem 2rem; font-size: 1rem;">
+          Add to Shopping Cart
+        </button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+{% if related_products %}
+  <section style="margin-top: 4rem;">
+    <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Related Products</h2>
+    <div class="products-grid">
+      {% for rel in related_products %}
+        <article class="product-card">
+          <div class="product-image-wrap">
+            <img src="{{ rel.get_image }}" alt="{{ rel.name }}" class="product-image">
+          </div>
+          <div class="product-body">
+            <h3 class="product-title">
+              <a href="{% url 'product_detail' rel.slug %}">{{ rel.name }}</a>
+            </h3>
+            <div class="product-footer">
+              <span class="product-price">${{ rel.price }}</span>
+              <a href="{% url 'product_detail' rel.slug %}" class="btn btn-secondary btn-sm">View Details</a>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+{% endblock %}

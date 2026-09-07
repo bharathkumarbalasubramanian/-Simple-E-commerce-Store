@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} - CodeAlpha Store{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumbs Navigation -->
+<nav style="margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+  <a href="{% url 'product_list' %}">Store</a> &nbsp;/&nbsp; 
+  {% if product.category %}
+    <a href="{% url 'product_list' %}?category={{ product.category.slug }}">{{ product.category.name }}</a> &nbsp;/&nbsp;
+  {% endif %}
+  <span style="color: var(--text-main);">{{ product.name }}</span>
+</nav>
+
+<div class="detail-grid">
+  <!-- Product Image Display -->
+  <div class="detail-gallery">
+    <img src="{{ product.get_image }}" alt="{{ product.name }}" id="detail-product-image">
+  </div>
+
+  <!-- Product Details & Actions -->
+  <div class="detail-info">
+    {% if product.category %}
+      <span style="color: var(--accent-primary); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+        {{ product.category.name }}
+      </span>
+    {% endif %}
+
+    <h1 class="detail-title" id="detail-product-name">{{ product.name }}</h1>
+
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <span class="detail-price">${{ product.price }}</span>
+      {% if product.stock > 0 %}
+        <span class="stock-badge in-stock">In Stock ({{ product.stock }} available)</span>
+      {% else %}
+        <span class="stock-badge out-of-stock">Out of Stock</span>
+      {% endif %}
+    </div>
+
+    <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.7;">
+      {{ product.description }}
+    </p>
+
+    <!-- Quantity & Add to Cart Form -->
+    {% if product.stock > 0 %}
+      <form action="{% url 'cart_add' product.id %}" method="POST" class="ajax-add-to-cart" id="detail-add-to-cart-form" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1.25rem;">
+        {% csrf_token %}
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <label class="form-label" style="margin-bottom: 0;">Quantity:</label>
+          <div class="quantity-control">
+            <button type="button" class="qty-btn" onclick="var q = document.getElementById('detail-qty'); if (parseInt(q.value) > 1) q.value = parseInt(q.value) - 1;">-</button>
+            <input type="number" name="quantity" id="detail-qty" value="1" min="1" max="{{ product.stock }}" class="qty-input">
+            <button type="button" class="qty-btn" onclick="var q = document.getElementById('detail-qty'); if (parseInt(q.value) < parseInt(q.max || '999')) q.value = parseInt(q.value) + 1;">+</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="detail-submit-btn" style="padding: 0.9rem 2rem; font-size: 1rem;">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+          </svg>
+          Add to Shopping Cart
+        </button>
+      </form>
+    {% endif %}
+
+    <!-- Trust Badges -->
+    <div style="margin-top: 1.5rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--glass-border); text-align: center; font-size: 0.8rem; color: var(--text-muted);">
+      <div>
+        <svg width="24" height="24" fill="none" stroke="var(--accent-primary)" viewBox="0 0 24 24" style="margin: 0 auto 0.4rem;">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        <span>Free Shipping Over $100</span>
+      </div>
+      <div>
+        <svg width="24" height="24" fill="none" stroke="var(--accent-primary)" viewBox="0 0 24 24" style="margin: 0 auto 0.4rem;">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+        <span>1-Year Official Warranty</span>
+      </div>
+      <div>
+        <svg width="24" height="24" fill="none" stroke="var(--accent-primary)" viewBox="0 0 24 24" style="margin: 0 auto 0.4rem;">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        <span>30-Day Money Back</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Related Products -->
+{% if related_products %}
+  <section style="margin-top: 4rem;">
+    <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Related Products</h2>
+    <div class="products-grid">
+      {% for rel in related_products %}
+        <article class="product-card">
+          <div class="product-image-wrap">
+            <img src="{{ rel.get_image }}" alt="{{ rel.name }}" class="product-image">
+          </div>
+          <div class="product-body">
+            <h3 class="product-title">
+              <a href="{% url 'product_detail' rel.slug %}">{{ rel.name }}</a>
+            </h3>
+            <div class="product-footer">
+              <span class="product-price">${{ rel.price }}</span>
+              <a href="{% url 'product_detail' rel.slug %}" class="btn btn-secondary btn-sm">View Details</a>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}
+
+{% endblock %}
