@@ -6,11 +6,14 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+from dotenv import load_dotenv
 
 from database import get_db
 import models
 
-SECRET_KEY = "fastapi-secret-ecommerce-key-change-in-production-mode"
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY", "fastapi-secret-ecommerce-key-change-in-production-mode")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 

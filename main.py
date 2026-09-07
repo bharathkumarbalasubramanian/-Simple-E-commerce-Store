@@ -42,6 +42,11 @@ def get_session_id(request: Request, response: Response) -> str:
     return session_id
 
 
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+
 # =========================================================================
 # REST API ENDPOINTS
 # =========================================================================
